@@ -1,5 +1,6 @@
 import graphene
-from graphene_django.types import DjangoObjectType, ObjectType
+from graphene import ObjectType
+from graphene_django.types import DjangoObjectType
 from account.models import User, Profile
 
 
@@ -13,5 +14,5 @@ class ProfileType(DjangoObjectType):
         model = Profile
 
 
-class Query(ObjectType):
+class UserQuery(ObjectType):
     pass

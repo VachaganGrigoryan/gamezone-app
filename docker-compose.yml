@@ -1,0 +1,35 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_NAME=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+  api:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=server.settings.local
+      - FRONTEND_URL=http://127.0.0.1:3000
+      - BACKEND_URL=http://127.0.0.1:8000
+      - DB_NAME=postgres
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - ACCOUNT_EMAIL_HOST=smtp.gmail.com
+      - ACCOUNT_EMAIL_PORT=587
+      - ACCOUNT_EMAIL_HOST_USER=vachagan.grigoryan.it@gmail.com
+      - ACCOUNT_EMAIL_HOST_PASSWORD=xnucurfpaoaeksrk
+      - USE_SPACES=True
+      - AWS_ACCESS_KEY_ID=QAMFHOEL3XRCIPN7B3IU
+      - AWS_SECRET_ACCESS_KEY=vZW5ETezng4/tzW5eFxJTlnFdZruG3P2CdYG49xx1uY
+      - AWS_STORAGE_BUCKET_NAME=allof-dev
+    depends_on:
+      - db

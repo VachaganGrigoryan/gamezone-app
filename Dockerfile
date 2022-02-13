@@ -1,5 +1,5 @@
 ### Build and install packages
-FROM python:3.9 as build-python
+FROM python:3.10 as build-python
 
 RUN apt-get -y update \
   && apt-get install -y gettext \
@@ -16,7 +16,7 @@ WORKDIR /app
 RUN pip install -r requirements.txt
 
 ### Final image
-FROM python:3.9-slim
+FROM python:3.10-slim
 
 RUN groupadd -r allof && useradd -r -g allof allof
 
@@ -41,7 +41,7 @@ RUN apt-get update \
 RUN mkdir -p /app/media /app/static \
   && chown -R allof:allof /app/
 
-COPY --from=build-python /usr/local/lib/python3.9/site-packages/ /usr/local/lib/python3.9/site-packages/
+COPY --from=build-python /usr/local/lib/python3.10/site-packages/ /usr/local/lib/python3.10/site-packages/
 COPY --from=build-python /usr/local/bin/ /usr/local/bin/
 COPY . /app
 WORKDIR /app

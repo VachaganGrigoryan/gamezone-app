@@ -1,19 +1,19 @@
 import graphene
-from account.schema import UserQuery, UserType
+import account.schema
 
 
 class Query(
-    UserQuery,
+    account.schema.UserQuery,
     graphene.ObjectType
 ):
     pass
 
 
 class Mutation(
-    UserType,
+    account.schema.UserMutation,
     graphene.ObjectType
 ):
     pass
 
 
-schema = graphene.Schema(query=Query)
+schema = graphene.Schema(query=Query, mutation=Mutation)

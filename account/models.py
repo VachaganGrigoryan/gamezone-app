@@ -46,7 +46,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     EMAIL_FIELD = 'email'
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['first_name', 'last_name', 'phone']
+    REQUIRED_FIELDS = ['first_name', 'last_name']
 
     class Meta:
         verbose_name = _('User')
@@ -71,7 +71,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 
 class Profile(models.Model):
-    # user = models.OneToOneField(User, related_name="profile", on_delete=models.CASCADE)
+    user = models.OneToOneField(User, related_name="profile", on_delete=models.CASCADE)
     avatar = models.ImageField(_('Avatar'), upload_to="profiles/avatars/", null=True, blank=True)
     banner = models.ImageField(_('Banner'), upload_to="profiles/banners/", null=True, blank=True)
 
@@ -86,7 +86,7 @@ class Profile(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        # ordering = ('user',)
+        ordering = ('user',)
         verbose_name = 'Profile'
         verbose_name_plural = 'Profiles'
 

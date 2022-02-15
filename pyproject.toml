@@ -26,6 +26,8 @@ Pillow = "^9.0.1"
 django-filter = "^21.1"
 djangorestframework = "^3.13.1"
 Markdown = "^3.3.6"
+black = "^22.1.0"
+isort = "^5.10.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"

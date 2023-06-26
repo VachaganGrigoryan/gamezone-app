@@ -1,19 +1,27 @@
-import graphene
-import account.schema
+import strawberry
+from strawberry.django import auth
+from typing import List
+
+from account.types import UserType, UserInput
+from games.checkers.types import CheckersBoardType
+from games.types import GameType
 
 
-class Query(
-    account.schema.UserQuery,
-    graphene.ObjectType
-):
-    pass
+@strawberry.type
+class Query:
+    users: List[UserType] = strawberry.django.field()
+    user: UserType = strawberry.django.field()
+
+    games: List[GameType] = strawberry.django.field()
+
+    checkers: List[CheckersBoardType] = strawberry.django.field()
 
 
-class Mutation(
-    account.schema.UserMutation,
-    graphene.ObjectType
-):
-    pass
+@strawberry.type
+class Mutation:
+    login: UserType = auth.login()
+    logout = auth.logout()
+    register: UserType = auth.register(UserInput)
 
 
-schema = graphene.Schema(query=Query, mutation=Mutation)
+schema = strawberry.Schema(query=Query, mutation=Mutation)

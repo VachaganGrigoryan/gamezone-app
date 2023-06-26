@@ -9,6 +9,20 @@ services:
       - POSTGRES_NAME=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5432:5432"
+
+#  checkers-db:
+#    image: postgres
+#    volumes:
+#      - ./data/checkers-db:/var/lib/postgresql/data
+#    environment:
+#      - POSTGRES_NAME=checkers-db
+#      - POSTGRES_USER=postgres
+#      - POSTGRES_PASSWORD=postgres
+#    ports:
+#      - "5433:5432"
+
   api:
     build: .
     command: python manage.py runserver 0.0.0.0:8000
@@ -20,9 +34,11 @@ services:
       - ENVIRONMENT=server.settings.local
       - FRONTEND_URL=http://127.0.0.1:3000
       - BACKEND_URL=http://127.0.0.1:8000
+      - DB_HOST=db
       - DB_NAME=postgres
       - DB_USER=postgres
       - DB_PASSWORD=postgres
+      - DB_PORT=5432
       - ACCOUNT_EMAIL_HOST=smtp.gmail.com
       - ACCOUNT_EMAIL_PORT=587
       - ACCOUNT_EMAIL_HOST_USER=vachagan.grigoryan.it@gmail.com

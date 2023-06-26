@@ -1,6 +1,6 @@
 from server.settings.base import *
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 DEBUG = True
 
@@ -14,9 +14,9 @@ DATABASES = {
         'NAME': env.str('DB_NAME'),
         'USER': env.str('DB_USER'),
         'PASSWORD': env.str('DB_PASSWORD'),
-        'HOST': 'localhost',
-        'PORT': 5432,
-    }
+        'HOST': env.str('DB_HOST'),
+        'PORT': env.str('DB_PORT'),
+    },
 }
 
 

@@ -1,5 +1,5 @@
 ### Build and install packages
-FROM python:3.10 as python-base
+FROM python:3.10.10-slim as python-base
 
 # Install Python dependencies
 ENV PYTHONUNBUFFERED=1 \
@@ -13,7 +13,7 @@ ENV PYTHONUNBUFFERED=1 \
     \
     # poetry
     # https://python-poetry.org/docs/configuration/#using-environment-variables
-    POETRY_VERSION=1.1.12 \
+    POETRY_VERSION=1.4.2 \
     # make poetry install to this location
     POETRY_HOME="/opt/poetry" \
     # make poetry create the virtual environment in the project's root
@@ -44,7 +44,7 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 # install poetry - respects $POETRY_VERSION & $POETRY_HOME
-RUN curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python
+RUN curl -sSL https://install.python-poetry.org | python -
 
 # We copy our Python requirements here to cache them
 # and install only runtime deps using poetry
@@ -99,35 +99,3 @@ WORKDIR /app
 EXPOSE 8000
 ENTRYPOINT /docker-entrypoint.sh $0 $@
 CMD ["gunicorn", "--bind", ":8000", "--workers", "4", "--worker-class", "server.asgi.gunicorn_worker.UvicornWorker", "server.asgi:application"]
-
-
-# 'lint' stage runs black and isort
-# running in check mode means build will fail if any linting errors occur
-#FROM development AS lint
-#RUN black --config ./pyproject.toml --check app tests
-#RUN isort --settings-path ./pyproject.toml --recursive --check-only
-#CMD ["tail", "-f", "/dev/null"]
-
-
-# 'test' stage runs our unit tests with pytest and
-# coverage.  Build will fail if test coverage is under 95%
-#FROM development AS test
-#RUN coverage run --rcfile ./pyproject.toml -m pytest ./tests
-#RUN coverage report --fail-under 95
-
-
-# 'production' stage uses the clean 'python-base' stage and copyies
-# in only our runtime deps that were installed in the 'builder-base'
-#FROM python-base as production
-#ENV FASTAPI_ENV=production
-#
-#COPY --from=build-python $VENV_PATH $VENV_PATH
-#
-#COPY ./scripts/docker-entrypoint.sh /docker-entrypoint.sh
-#RUN chmod +x /docker-entrypoint.sh
-#
-#COPY . /app
-#WORKDIR /app
-#
-#ENTRYPOINT /docker-entrypoint.sh $0 $@
-#CMD ["gunicorn", "--bind", ":8000", "--workers", "4", "--worker-class", "server.asgi.gunicorn_worker.UvicornWorker", "server.asgi:application"]

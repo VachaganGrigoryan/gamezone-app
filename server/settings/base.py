@@ -46,12 +46,16 @@ INSTALLED_APPS = [
 
 THIRD_PARTY_APPS = [
     "django_filters",
-    "graphene_django",
+    "strawberry.django",
 ]
 
 PROJECT_APPS = [
     'account',
+    'jwt_auth',
+    'jwt_auth.jwt_token',
     'core',
+    'games',
+    'games.checkers',
 ]
 
 AUTH_USER_MODEL = 'account.User'
@@ -139,17 +143,8 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Add JSONWebTokenMiddleware middleware to your GRAPHENE settings:
-
-GRAPHENE = {
-    "SCHEMA": "server.schema.schema",
-    "MIDDLEWARE": [
-        "graphql_jwt.middleware.JSONWebTokenMiddleware",
-    ],
-}
-
 # Add JSONWebTokenBackend backend to your AUTHENTICATION_BACKENDS:
 AUTHENTICATION_BACKENDS = [
-    "graphql_jwt.backends.JSONWebTokenBackend",
+    # "graphql_jwt.backends.JSONWebTokenBackend",
     "django.contrib.auth.backends.ModelBackend",
 ]

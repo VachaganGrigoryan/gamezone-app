@@ -15,6 +15,10 @@ class GameType:
     updated_at: str
 
     @classmethod
+    def all(cls, info):
+        return cls.get_queryset(models.Game.objects.all(), info)
+
+    @classmethod
     def get_queryset(cls, queryset, info):
         return queryset.filter(is_active=True)
 

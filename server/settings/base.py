@@ -49,7 +49,7 @@ class DjangoSettings(BaseSettings):
         'django.contrib.messages',
         'django.contrib.staticfiles',
 
-        # Third party apps
+        # Third party
         "django_filters",
         "strawberry.django",
 

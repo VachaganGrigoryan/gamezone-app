@@ -1,3 +1,5 @@
+import uuid
+
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
 
@@ -10,6 +12,7 @@ class Board(models.Model):
     A game board
     """
     guid = models.UUIDField(
+        default=uuid.uuid4,
         primary_key=True,
         editable=False,
         unique=True,
@@ -29,6 +32,7 @@ class Board(models.Model):
         verbose_name=_('Players'),
         help_text=_('The players of the board.'),
         related_name='boards_players',
+        through='BoardPlayers',
     )
     winner = models.ForeignKey(
         'account.User',
@@ -99,6 +103,33 @@ class Board(models.Model):
 
     def __str__(self):
         return f'{self.guid}'
+
+    def get_next_queue(self, current):
+        players = self.players.all()
+        return players[0] == current and players[1] or players[0]
+
+
+class BoardPlayers(models.Model):
+    STONE_CHOICES = [
+        (2, 'White'),
+        (3, 'Black'),
+    ]
+
+    board = models.ForeignKey(
+        Board,
+        on_delete=models.CASCADE,
+    )
+    player = models.ForeignKey(
+        'account.User',
+        on_delete=models.CASCADE,
+    )
+    stone_type = models.PositiveSmallIntegerField(
+        choices=STONE_CHOICES,
+        default=2,
+    )
+
+    class Meta:
+        unique_together = ('board', 'stone_type')
 
 
 class Histories(models.Model):

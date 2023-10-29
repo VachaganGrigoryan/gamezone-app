@@ -92,7 +92,6 @@ def update_board(
         # check diagonal
         if abs(x2 - x1) != abs(y2 - y1):
             return {'error': 'not diagonal'}
-
         dif_x = 1 if x1 < x2 else -1
         dif_y = 1 if y1 < y2 else -1
 
@@ -101,15 +100,16 @@ def update_board(
 
         enemy_count = 0
         # every square in move
-        while temp_x != x2 - dif_x:
-            current_stone_type = player.stone_type % 2 == board.grid[temp_x][temp_y] % 2
-
+        while temp_x != x2:
+            current_stone = board.grid[temp_x][temp_y]
+            current_stone_type = player.stone_type % 2 == current_stone % 2 and current_stone != 1
             # check
             if current_stone_type:
                 return False
             else:
                 # check eat or not
-                if player.stone_type % 2 != board.grid[temp_x][temp_y] % 2 and board.grid[temp_x][temp_y] != 1:
+                if player.stone_type % 2 != current_stone % 2 and current_stone != 1:
+                    board.grid[temp_x][temp_y] = 1
                     enemy_count += 1
                 if enemy_count < 2:
                     board.grid[temp_x][temp_y] = 1
@@ -133,7 +133,7 @@ def update_board(
         # check damka
         if player.stone_type == 2 and last_move[0] == 7:
             board.grid[last_move[0]][last_move[1]] = 4
-        if player.stone_type == 3 and last_move == 0:
+        if player.stone_type == 3 and last_move[0] == 0:
             board.grid[last_move[0]][last_move[1]] = 5
         # everything is ok
         # save changes

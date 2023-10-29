@@ -138,6 +138,7 @@ class Histories(models.Model):
     """
 
     guid = models.UUIDField(
+        default=uuid.uuid4,
         primary_key=True,
         editable=False,
         unique=True,

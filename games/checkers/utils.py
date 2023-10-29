@@ -19,9 +19,5 @@ def init_board(length):
     return [[get_num(i, j) for j in range(length)] for i in range(length)]
 
 
-
-
-
-
 if __name__ == '__main__':
     pprint.pprint(init_board(8))

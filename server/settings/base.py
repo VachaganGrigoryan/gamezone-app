@@ -59,6 +59,7 @@ class DjangoSettings(BaseSettings):
         'core',
         'games',
         'games.checkers',
+        'games.bazarblot',
     ]
 
     AUTH_USER_MODEL: str = 'account.User'

@@ -20,6 +20,6 @@ def create_board(owner: str, color: str, length: int) -> JSON:
     return init_game(owner, color, length)
 
 
-@strawberry.mutation(permission_classes=[IsAuthenticated])
+@strawberry.mutation#(permission_classes=[IsAuthenticated])
 def update_board_in_game(guid: strawberry.ID, grid_changes: List[List[int]]) -> JSON:
     return update_board(guid=guid, grid_changes=grid_changes)

@@ -1,4 +1,3 @@
-import pprint
 from datetime import datetime
 from functools import reduce
 from typing import List
@@ -49,6 +48,7 @@ def update_board(
     taken_points = []
     # message for developer
     message = 'everything is ok'
+    move_type = abs(grid_changes[0][0] - grid_changes[1][0])
 
     # function for reduce
     def move_validation(from_point, to_point):
@@ -56,7 +56,6 @@ def update_board(
             return False
         x1, y1 = from_point
         x2, y2 = to_point
-
         # check what has just moved player_queue
         if player_queue.stone_type % 2 != board.grid[x1][y1] % 2:
             return False
@@ -73,15 +72,18 @@ def update_board(
             return False
         # check simple move
         if abs(x2 - x1) == abs(y2 - y1) == 1:
+            if move_type == 2 or len(grid_changes) > 2:
+                return False
             board.grid[x2][y2] = board.grid[x1][y1]
             board.grid[x1][y1] = 1
             return to_point
         # check eat move and destroy eaten stone
         if abs(x2 - x1) == abs(y2 - y1) == 2 and board.grid[x1][y1] < 4:
+            if move_type == 1:
+                return False
             mid_x = (x1 + x2) // 2
             mid_y = (y1 + y2) // 2
-            if board.grid[mid_x][mid_y] == board.grid[x1][y1]:
-                print(False)
+            if board.grid[mid_x][mid_y] == board.grid[x1][y1] or board.grid[mid_x][mid_y] == 1:
                 return False
             board.grid[x2][y2] = board.grid[x1][y1]
             board.grid[x1][y1] = 1
@@ -90,6 +92,11 @@ def update_board(
             return to_point
 
         # already damka
+
+        # let 1 move if no eat
+        if from_point in grid_changes[1:] and taken_points == []:
+            return False
+
         # check diagonal
         if abs(x2 - x1) != abs(y2 - y1):
             return {'error': 'not diagonal'}
@@ -126,7 +133,8 @@ def update_board(
         return to_point
 
     # calling validation function
-    last_move = reduce(lambda from_point, to_point: move_validation(from_point, to_point), grid_changes)
+    last_move = reduce(lambda from_point, to_point: move_validation(from_point, to_point), grid_changes)\
+        if len(grid_changes) > 1 else False
 
     # check function result
     if last_move != grid_changes[-1]:
@@ -138,7 +146,7 @@ def update_board(
         if player_queue.stone_type == 3 and last_move[0] == 0:
             board.grid[last_move[0]][last_move[1]] = 5
         # everything is ok
-        # save changes
+        # save changesq
         now = datetime.now()
         Histories.objects.create(
             board=board,

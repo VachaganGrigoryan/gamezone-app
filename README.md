@@ -68,7 +68,6 @@ Before you get started, ensure you have the following installed on your system:
 - `account/`: Django app for user authentication.
 - `core/`: Django app for core functionality of the project.
 - `game/`: Django app for game, here we can new game as django app.
-- `jwt_auth/`: Django app for JWT authentication with GraphQL.
 - `server/`: Django project settings.
 - `scripts/`: Scripts for development and production.
 

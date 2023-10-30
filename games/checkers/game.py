@@ -8,7 +8,7 @@ from asgiref.sync import sync_to_async
 
 from core.json import JSON
 from . import models
-from .models import Board, BoardPlayers
+from .models import Board, BoardPlayers, Histories
 import enum
 from .utils import init_board
 from account.models import User
@@ -45,29 +45,29 @@ def update_board(
         grid_changes: List[List[int]]
 ) -> JSON:
     board = models.Board.objects.get(guid=guid)
-    player = BoardPlayers.objects.get(player=board.queue)
-
+    player_queue = BoardPlayers.objects.get(player=board.queue)
+    taken_points = []
     # message for developer
     message = 'everything is ok'
 
     # function for reduce
     def move_validation(from_point, to_point):
+        if not from_point:
+            return False
         x1, y1 = from_point
         x2, y2 = to_point
 
-        # check what has just moved player
-        if player.stone_type % 2 != board.grid[x1][y1] % 2:
+        # check what has just moved player_queue
+        if player_queue.stone_type % 2 != board.grid[x1][y1] % 2:
             return False
-
         # check move direction and damka
         if board.grid[x1][y1] < 3:
-            if player.stone_type == 2:
+            if player_queue.stone_type == 2:
                 if x2 < x1 and x1 - x2 != 2:
                     return False
             else:
                 if x2 > x1 and x1 - x2 != 2:
                     return False
-
         # check move destination
         if board.grid[x2][y2] == 0 or board.grid[x2][y2] != 1:
             return False
@@ -76,16 +76,17 @@ def update_board(
             board.grid[x2][y2] = board.grid[x1][y1]
             board.grid[x1][y1] = 1
             return to_point
-
         # check eat move and destroy eaten stone
         if abs(x2 - x1) == abs(y2 - y1) == 2 and board.grid[x1][y1] < 4:
             mid_x = (x1 + x2) // 2
             mid_y = (y1 + y2) // 2
             if board.grid[mid_x][mid_y] == board.grid[x1][y1]:
+                print(False)
                 return False
             board.grid[x2][y2] = board.grid[x1][y1]
             board.grid[x1][y1] = 1
             board.grid[mid_x][mid_y] = 1
+            taken_points.append([mid_x, mid_y])
             return to_point
 
         # already damka
@@ -102,15 +103,16 @@ def update_board(
         # every square in move
         while temp_x != x2:
             current_stone = board.grid[temp_x][temp_y]
-            current_stone_type = player.stone_type % 2 == current_stone % 2 and current_stone != 1
+            current_stone_type = player_queue.stone_type % 2 == current_stone % 2 and current_stone != 1
             # check
             if current_stone_type:
                 return False
             else:
                 # check eat or not
-                if player.stone_type % 2 != current_stone % 2 and current_stone != 1:
+                if player_queue.stone_type % 2 != current_stone % 2 and current_stone != 1:
                     board.grid[temp_x][temp_y] = 1
                     enemy_count += 1
+                    taken_points.append([temp_x, temp_y])
                 if enemy_count < 2:
                     board.grid[temp_x][temp_y] = 1
                 else:
@@ -124,21 +126,30 @@ def update_board(
         return to_point
 
     # calling validation function
-    last_move = reduce(lambda f, t: move_validation(f, t), grid_changes)
+    last_move = reduce(lambda from_point, to_point: move_validation(from_point, to_point), grid_changes)
 
     # check function result
     if last_move != grid_changes[-1]:
         message = 'Wrong move'
     else:
         # check damka
-        if player.stone_type == 2 and last_move[0] == 7:
+        if player_queue.stone_type == 2 and last_move[0] == 7:
             board.grid[last_move[0]][last_move[1]] = 4
-        if player.stone_type == 3 and last_move[0] == 0:
+        if player_queue.stone_type == 3 and last_move[0] == 0:
             board.grid[last_move[0]][last_move[1]] = 5
         # everything is ok
         # save changes
+        now = datetime.now()
+        Histories.objects.create(
+            board=board,
+            player=player_queue.player,
+            from_point=grid_changes[0],
+            to_points=grid_changes[1:],
+            taken_points=taken_points,
+            played_at=now,
+        )
         board.queue = board.get_next_queue(board.queue)
-        board.updated_at = datetime.now()
+        board.updated_at = now
         board.save()
     return {
         "queue": str(board.queue),

@@ -169,11 +169,15 @@ class Histories(models.Model):
         size=2,
     )
 
-    to_point = ArrayField(
-        models.IntegerField(),
+    to_points = ArrayField(
+        ArrayField(
+            models.IntegerField(),
+            size=2,
+        ),
         verbose_name=_('To point'),
-        help_text=_('The to point of the history.'),
-        size=2,
+        help_text=_('To points of the history.'),
+        blank=True,
+        null=True,
     )
 
     taken_points = ArrayField(

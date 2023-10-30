@@ -142,7 +142,7 @@ def update_board(
         board.save()
     return {
         "queue": str(board.queue),
-        "grid": str(board.grid),
+        "grid": board.grid,
         "updated_at": str(board.updated_at),
         "message": message,
     }

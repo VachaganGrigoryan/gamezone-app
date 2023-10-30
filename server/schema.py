@@ -3,14 +3,13 @@ from typing import List
 import strawberry
 from strawberry.django import auth
 
-from jwt_auth.decorators import login_required
-from jwt_auth.extension import AsyncJwtExtension
-from jwt_auth.mutations import auth_token, refresh_token
+from jwtberry.mutations import auth_token
+from jwtberry.permission import IsAuthenticated
+from jwtberry.types import JwtAuthResponse
 
 from account.types import UserType, UserInput
 from games.checkers.types import CheckersBoardType
 from games.types import GameType
-from jwt_auth.types import JwtAuthResponse
 
 
 @strawberry.type
@@ -22,13 +21,11 @@ class Query:
 
     checkers: List[CheckersBoardType] = strawberry.django.field()
 
-    @strawberry.django.field
-    @login_required
+    @strawberry.django.field(permission_classes=[IsAuthenticated])
     def games(self, info) -> List[GameType]:
         return GameType.all(info)
 
-    @strawberry.field
-    @login_required
+    @strawberry.field(permission_classes=[IsAuthenticated])
     def me(self, info) -> UserType:
         return info.context.user
 
@@ -36,7 +33,7 @@ class Query:
 @strawberry.type
 class Mutation:
     login: JwtAuthResponse = auth_token
-    refresh: JwtAuthResponse = refresh_token
+    # refresh: JwtAuthResponse = refresh_token
     logout = auth.logout()
     register: UserType = auth.register(UserInput)
 
@@ -44,7 +41,4 @@ class Mutation:
 schema = strawberry.Schema(
     query=Query,
     mutation=Mutation,
-    extensions=[
-        AsyncJwtExtension,  # JwtExtension,
-    ],
 )

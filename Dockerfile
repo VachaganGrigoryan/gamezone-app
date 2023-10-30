@@ -1,5 +1,11 @@
 ### Build and install packages
-FROM python:3.10.10-slim as python-base
+FROM python:3.11-slim as python-base
+
+# Add user that will be used in the container.
+RUN useradd gamezone
+
+# Port used by this container to serve HTTP.
+EXPOSE 8000
 
 # Install Python dependencies
 ENV PYTHONUNBUFFERED=1 \
@@ -30,72 +36,63 @@ ENV PYTHONUNBUFFERED=1 \
 # prepend poetry and venv to path
 ENV PATH="$POETRY_HOME/bin:$VENV_PATH/bin:$PATH"
 
-FROM python-base as build-python
-# `build-python` stage is used to build deps + create our virtual environment
-RUN apt-get update \
-    && apt-get install --no-install-recommends -y \
-        gettext \
-        apt-utils \
-        # deps for installing poetry  \
-        curl \
-        # deps for building python deps
-        build-essential \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+# Install system packages required by Wagtail and Django.
+RUN apt-get update --yes --quiet && apt-get install --yes --quiet --no-install-recommends \
+    build-essential \
+    libpq-dev \
+    libjpeg62-turbo-dev \
+    zlib1g-dev \
+    libwebp-dev \
+ && rm -rf /var/lib/apt/lists/*
 
-# install poetry - respects $POETRY_VERSION & $POETRY_HOME
-RUN curl -sSL https://install.python-poetry.org | python -
+# Set the working directory to /tmp.
+WORKDIR /tmp
 
-# We copy our Python requirements here to cache them
-# and install only runtime deps using poetry
-WORKDIR $PYSETUP_PATH
-COPY poetry.lock pyproject.toml ./
-RUN poetry install --no-dev  # respects
+# Install the application server.
+RUN pip install "gunicorn==20.0.4"
 
+# Install poetry.
+RUN pip install poetry
+# Copy the project requirements files.
+COPY ./pyproject.toml ./poetry.lock* /tmp/
+# Export the project requirements to a requirements.txt file.
+RUN poetry export -f requirements.txt --output requirements.txt --without-hashes
 
-# 'development' stage installs all dev deps and can be used to develop code.
-# For example using docker-compose to mount local volume under /app
-FROM python-base as development
-ENV FASTAPI_ENV=development
+# Upgrade pip.
+RUN pip install --upgrade pip
 
-RUN groupadd -r gamezone && useradd -r -g gamezone gamezone
+# Install the project requirements.
+#COPY ./tmp/requirements.txt /tmp/
+RUN pip install -r ./requirements.txt
 
-RUN apt-get update \
-  && apt-get install -y \
-  libcairo2 \
-  libgdk-pixbuf2.0-0 \
-  liblcms2-2 \
-  libopenjp2-7 \
-  libpango-1.0-0 \
-  libpangocairo-1.0-0 \
-  libssl1.1 \
-  libtiff5 \
-  libwebp6 \
-  libxml2 \
-  libpq5 \
-  shared-mime-info \
-  mime-support \
-  && apt-get clean \
-  && rm -rf /var/lib/apt/lists/*
-
-RUN mkdir -p /app/media /app/static \
-  && chown -R gamezone:gamezone /app/
-
-# Copying poetry and venv into image
-COPY --from=build-python $POETRY_HOME $POETRY_HOME
-COPY --from=build-python $PYSETUP_PATH $PYSETUP_PATH
-
-# Copying in our entrypoint
-COPY ./scripts/docker-entrypoint.sh /docker-entrypoint.sh
-RUN chmod +x /docker-entrypoint.sh
-
-# venv already has runtime deps installed we get a quicker install
-WORKDIR $PYSETUP_PATH
-RUN poetry install
-
-COPY . /app
+# Use /app folder as a directory where the source code is stored.
 WORKDIR /app
 
-EXPOSE 8000
-ENTRYPOINT /docker-entrypoint.sh $0 $@
+# Set this directory to be owned by the "fireflies" user. This Wagtail project
+# uses SQLite, the folder needs to be owned by the user that
+# will be writing to the database file.
+RUN chown gamezone:gamezone /app
+
+# Copy the source code of the project into the container.
+COPY --chown=gamezone:gamezone . .
+
+# Use user "gamezone" to run the build commands below and the server itself.
+USER gamezone
+
+# Collect static files.
+RUN #python manage.py collectstatic --noinput --clear
+
+# Runtime command that executes when "docker run" is called, it does the
+# following:
+#   1. Migrate the database.
+#   2. Start the application server.
+# WARNING:
+#   Migrating database at the same time as starting the server IS NOT THE BEST
+#   PRACTICE. The database should be migrated manually or using the release
+#   phase facilities of your hosting platform. This is used only so the
+#   Wagtail instance can be started with a simple "docker run" command.
+CMD set -xe; python manage.py migrate --noinput
+#CMD gunicorn config.wsgi:application
+#CMD daphne -b $HOST_URL -p $PORT config.asgi:application
 CMD ["gunicorn", "--bind", ":8000", "--workers", "4", "--worker-class", "server.asgi.gunicorn_worker.UvicornWorker", "server.asgi:application"]
+# gunicorn --bind 0.0.0.0:8000 jwt_berry.asgi -w 4 -k uvicorn.workers.UvicornWorker

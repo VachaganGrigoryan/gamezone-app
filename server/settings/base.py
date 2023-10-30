@@ -55,8 +55,7 @@ class DjangoSettings(BaseSettings):
 
         # Local apps
         'account',
-        'jwt_auth',
-        'jwt_auth.jwt_token',
+        'jwtberry.blackberry',
         'core',
         'games',
         'games.checkers',
@@ -142,7 +141,7 @@ class DjangoSettings(BaseSettings):
 
     # Add JSONWebTokenBackend backend to your AUTHENTICATION_BACKENDS:
     AUTHENTICATION_BACKENDS: List[str] = [
-        "jwt_auth.backends.JwtAuthBackend",
+        "jwtberry.backends.JwtAuthBackend",
         "django.contrib.auth.backends.ModelBackend",
     ]
 

@@ -15,8 +15,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from strawberry.django.views import GraphQLView
-from strawberry.django.views import AsyncGraphQLView
+from jwtberry.views import JwtAsyncGraphQLView
 
 from server.schema import schema
 
@@ -24,5 +23,5 @@ from server.schema import schema
 urlpatterns = [
     path('admin/', admin.site.urls),
 
-    path("graphql/", AsyncGraphQLView.as_view(schema=schema)),
+    path("graphql/", JwtAsyncGraphQLView.as_view(schema=schema)),
 ]

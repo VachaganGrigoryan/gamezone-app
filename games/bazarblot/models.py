@@ -47,6 +47,7 @@ class Round(models.Model):
     current_player = models.ForeignKey(Player, on_delete=models.CASCADE,  related_name='round_current_player')  # Player whose turn it is in the round
     round_number = models.IntegerField()  # Round number within the game
     is_completed = models.BooleanField(default=False)  # Flag to indicate if the round is completed
+    tricks = models.ManyToManyField('Trick', blank=True)  # Store tricks played in the round
 
 
 class Trick(models.Model):

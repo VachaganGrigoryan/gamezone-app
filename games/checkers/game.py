@@ -34,8 +34,10 @@ def init_game(guid, color=CC.White.value, length=8):
         stone_type=2 if color == CC.White.value else 3
     )
 
-    temp = {"guid": str(board.guid), "board": list(board.grid)}
-    return temp
+    return {
+        "guid": str(board.guid),
+        "board": board.grid
+    }
 
 
 @sync_to_async
@@ -44,7 +46,7 @@ def update_board(
         grid_changes: List[List[int]]
 ) -> JSON:
     board = models.Board.objects.get(guid=guid)
-    player_queue = BoardPlayers.objects.get(player=board.queue)
+    player_queue = BoardPlayers.objects.get(player=board.queue, board=board)
     taken_points = []
     # message for developer
     message = 'everything is ok'
@@ -92,14 +94,13 @@ def update_board(
             return to_point
 
         # already damka
-
         # let 1 move if no eat
         if from_point in grid_changes[1:] and taken_points == []:
             return False
 
         # check diagonal
         if abs(x2 - x1) != abs(y2 - y1):
-            return {'error': 'not diagonal'}
+            return False
         dif_x = 1 if x1 < x2 else -1
         dif_y = 1 if y1 < y2 else -1
 
@@ -146,13 +147,12 @@ def update_board(
         if player_queue.stone_type == 3 and last_move[0] == 0:
             board.grid[last_move[0]][last_move[1]] = 5
         # everything is ok
-        # save changesq
+        # save changes
         now = datetime.now()
         Histories.objects.create(
             board=board,
             player=player_queue.player,
-            from_point=grid_changes[0],
-            to_points=grid_changes[1:],
+            grid_changes=grid_changes,
             taken_points=taken_points,
             played_at=now,
         )

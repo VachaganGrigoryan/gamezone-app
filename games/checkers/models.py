@@ -162,21 +162,13 @@ class Histories(models.Model):
         related_name='histories',
     )
 
-    from_point = ArrayField(
-        models.IntegerField(),
-        verbose_name=_('From point'),
-        help_text=_('The from point of the history.'),
-        size=2,
-    )
-
-    to_points = ArrayField(
+    grid_changes = ArrayField(
         ArrayField(
             models.IntegerField(),
             size=2,
         ),
-        verbose_name=_('To point'),
-        help_text=_('To points of the history.'),
-        blank=True,
+        verbose_name=_('Grid changes'),
+        help_text=_('Move points of the history.'),
         null=True,
     )
 

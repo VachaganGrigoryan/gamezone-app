@@ -4,6 +4,11 @@ from django.db import models
 from games.checkers.choices import BoardLength
 from django.utils.translation import gettext_lazy as _
 
+class MultiplayerGame(models.Model):
+    sender_id = models.CharField(max_length=100)
+    recipient_id = models.CharField(max_length=100)
+    board_id = models.IntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
 
 class Board(models.Model):
     """

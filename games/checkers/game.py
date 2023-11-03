@@ -9,7 +9,7 @@ from core.json import JSON
 from . import models
 from .models import Board, BoardPlayers, Histories
 import enum
-from .utils import init_board
+from .utils import init_board, get_captureable_stones
 from account.models import User
 
 
@@ -23,10 +23,15 @@ def init_game(guid, color=CC.White.value, length=8):
     owner = User.objects.get(guid=guid)
     if not owner:
         return 'no user'
+    grid = init_board(length)
+    if not grid:
+        return {
+            'error': "The Board should be have 8 or 10 length!"
+        }
     board = Board.objects.create(
         owner=owner,
         queue=owner if color == CC.White.value else None,
-        grid=init_board(length),
+        grid=grid,
     )
     BoardPlayers.objects.create(
         board=board,
@@ -48,21 +53,24 @@ def update_board(
     board = models.Board.objects.get(guid=guid)
     player_queue = BoardPlayers.objects.get(player=board.queue, board=board)
     taken_points = []
+    partadir = []
     # message for developer
     message = 'everything is ok'
     move_type = abs(grid_changes[0][0] - grid_changes[1][0])
 
     # function for reduce
     def move_validation(from_point, to_point):
+        global partadir
         if not from_point:
             return False
+
         x1, y1 = from_point
         x2, y2 = to_point
         # check what has just moved player_queue
         if player_queue.stone_type % 2 != board.grid[x1][y1] % 2:
             return False
         # check move direction and damka
-        if board.grid[x1][y1] < 3:
+        if board.grid[x1][y1] > 0:
             if player_queue.stone_type == 2:
                 if x2 < x1 and x1 - x2 != 2:
                     return False
@@ -74,13 +82,16 @@ def update_board(
             return False
         # check simple move
         if abs(x2 - x1) == abs(y2 - y1) == 1:
-            if move_type == 2 or len(grid_changes) > 2:
+            eat_list = get_captureable_stones(board.grid, player_queue.stone_type)
+            if not eat_list:
+                board.grid[x2][y2] = board.grid[x1][y1]
+                board.grid[x1][y1] = 1
+                return to_point
+            else:
+                partadir = eat_list
                 return False
-            board.grid[x2][y2] = board.grid[x1][y1]
-            board.grid[x1][y1] = 1
-            return to_point
         # check eat move and destroy eaten stone
-        if abs(x2 - x1) == abs(y2 - y1) == 2 and board.grid[x1][y1] < 4:
+        if abs(x2 - x1) == abs(y2 - y1) == 2 and board.grid[x1][y1] > 1:
             if move_type == 1:
                 return False
             mid_x = (x1 + x2) // 2
@@ -108,6 +119,13 @@ def update_board(
         temp_y = y1 + dif_y
 
         enemy_count = 0
+        eat_list = get_captureable_stones(board.grid, player_queue.stone_type)
+        print(f'nel {not eat_list} {eat_list}')
+
+        if eat_list and from_point not in eat_list:
+            partadir = eat_list
+            return False
+
         # every square in move
         while temp_x != x2:
             current_stone = board.grid[temp_x][temp_y]
@@ -134,18 +152,18 @@ def update_board(
         return to_point
 
     # calling validation function
-    last_move = reduce(lambda from_point, to_point: move_validation(from_point, to_point), grid_changes)\
+    moves_result = reduce(lambda from_point, to_point: move_validation(from_point, to_point), grid_changes) \
         if len(grid_changes) > 1 else False
-
     # check function result
-    if last_move != grid_changes[-1]:
+    if (not moves_result or
+            (moves_result in get_captureable_stones(board.grid, player_queue.stone_type) and taken_points)):
         message = 'Wrong move'
     else:
         # check damka
-        if player_queue.stone_type == 2 and last_move[0] == 7:
-            board.grid[last_move[0]][last_move[1]] = 4
-        if player_queue.stone_type == 3 and last_move[0] == 0:
-            board.grid[last_move[0]][last_move[1]] = 5
+        if player_queue.stone_type == 2 and moves_result[0] == 7:
+            board.grid[moves_result[0]][moves_result[1]] = -2
+        if player_queue.stone_type == 3 and moves_result[0] == 0:
+            board.grid[moves_result[0]][moves_result[1]] = -3
         # everything is ok
         # save changes
         now = datetime.now()
@@ -156,12 +174,13 @@ def update_board(
             taken_points=taken_points,
             played_at=now,
         )
-        board.queue = board.get_next_queue(board.queue)
+        board.queue = board.get_next_queue(current=board.queue)
         board.updated_at = now
-        board.save()
+        # board.save()
     return {
         "queue": str(board.queue),
         "grid": board.grid,
         "updated_at": str(board.updated_at),
+        "partadir": partadir,
         "message": message,
     }

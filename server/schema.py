@@ -12,6 +12,7 @@ from games.checkers.types import CheckersBoardType
 from games.types import GameType
 from games.checkers.mutations import create_board, update_board_in_game
 from core.json import JSON
+from games.checkers.game import get_board
 
 
 @strawberry.type
@@ -34,6 +35,11 @@ class Query:
     @strawberry.field(permission_classes=[IsAuthenticated])
     def me(self, info) -> UserType:
         return info.context.user
+    
+    # get board state
+    @strawberry.field
+    def resolve_board_state(self, info, guid: str) -> JSON:
+        return get_board(guid)
 
 
 @strawberry.type

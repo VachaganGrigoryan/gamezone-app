@@ -9,7 +9,7 @@ from core.json import JSON
 from . import models
 from .models import Board, BoardPlayers, Histories
 import enum
-from .utils import init_board, get_captureable_stones
+from .utils import init_board, get_captureable_stones, looser
 from account.models import User
 
 
@@ -44,7 +44,7 @@ def init_game(guid, color=CC.White.value, length=8):
         "board": board.grid
     }
 
-
+winner = 'Game is going'
 @sync_to_async
 def update_board(
         guid: strawberry.ID,
@@ -59,6 +59,7 @@ def update_board(
     move_type = abs(grid_changes[0][0] - grid_changes[1][0])
 
     # function for reduce
+    global move_validation
     def move_validation(from_point, to_point):
         global partadir
         if not from_point:
@@ -177,10 +178,34 @@ def update_board(
         board.queue = board.get_next_queue(current=board.queue)
         board.updated_at = now
         # board.save()
+        
+        #determine winner
+        if not looser(board.grid, player_queue.stone_type):
+            global winner
+            winner = board.get_next_queue(current=board.queue)
+            print(winner)
+            # return winner
+        else:
+            winner
+            print(winner)
+
     return {
         "queue": str(board.queue),
         "grid": board.grid,
         "updated_at": str(board.updated_at),
         "partadir": partadir,
         "message": message,
+        "winner": winner,
+    }
+
+
+@sync_to_async
+def get_board(guid):
+    board = models.Board.objects.get(guid=guid)
+        # guid = types.CheckersBoardType.guid
+
+    return {
+    "queue": str(board.queue),
+    "grid": board.grid,
+    "updated_at": str(board.updated_at),
     }

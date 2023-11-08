@@ -1,3 +1,5 @@
+import uuid
+
 from django.core.mail import send_mail
 from django.db import models
 from django.contrib.auth.models import (
@@ -15,7 +17,7 @@ from core.mail import send_multi_format_email
 
 
 class User(AbstractBaseUser, PermissionsMixin):
-    guid = models.UUIDField(auto_created=True, unique=True, db_index=True)
+    guid = models.UUIDField(default=uuid.uuid4, auto_created=True, unique=True, db_index=True)
     first_name = models.CharField(_('first name'), max_length=150, blank=True)
     last_name = models.CharField(_('last name'), max_length=150, blank=True)
     email = models.EmailField(_('email address'), unique=True)

@@ -1,4 +1,4 @@
-import pprint
+from pprint import pprint
 
 from games.checkers.GamePhase import GamePhase
 
@@ -125,55 +125,91 @@ def move_validation(from_point, to_point, game_phase: GamePhase):
         'result': game_phase.result,
     }
 
+def looser(grid, stone_type):
+    
+    length = len(grid)
+
+    operations = [
+        [1, 1],
+        [-1, -1],
+        [1, -1],
+        [-1, 1],
+    ]
+
+    for y, row in enumerate(grid):
+            for x, stone in enumerate(row):
+                if abs(grid[y][x]) == stone_type:
+                    for o in operations:
+                        temp_y = y + o[0]
+                        temp_x = x + o[1]
+                        temp_y_2 = y + o[0] * 2
+                        temp_x_2 = x + o[1] * 2
+
+                        if in_board(temp_y, temp_x, length):
+
+                            if stone_type == 2 and temp_y > y:
+                                if grid[temp_y][temp_x] == 1:
+                                    print('>'*5)
+                                    return True
+                            if stone_type == 3 and temp_y < y:
+                                if grid[temp_y][temp_x] == 1:
+                                    print('>'*5)
+                                    return True
+                        
+                        if in_board(temp_y_2, temp_x_2, length):
+                            if abs(grid[temp_y][temp_x]) == turns(stone_type) and grid[temp_y_2][temp_x_2] == 1:
+                                return True
+    return False
+
 
 if __name__ == '__main__':
     grid = [
         [
             0,
-            2,
             0,
-            2,
             0,
-            2,
             0,
-            2,
             0,
-            2
+            0,
+            0,
+            0,
+            0,
+            0
         ],
         [
             1,
             0,
-            2,
             0,
-            2,
             0,
-            2,
             0,
-            2,
+            0,
+            0,
+            0,
+            0,
             0
         ],
         [
             0,
-            2,
             0,
-            2,
             0,
-            2,
+            0,
+            0,
+            0,
             0,
             1,
             0,
-            2
+            0
         ],
         [
-            2,
             0,
-            2,
             0,
-            2,
             0,
-            2,
             0,
-            2,
+            0,
+            0,
+            0,
+            0,
+            0,
             0
         ],
         [
@@ -184,7 +220,7 @@ if __name__ == '__main__':
             0,
             3,
             0,
-            -2,
+            -0,
             0,
             1
         ],
@@ -204,7 +240,7 @@ if __name__ == '__main__':
             0,
             3,
             0,
-            2,
+            0,
             0,
             3,
             0,
@@ -249,6 +285,9 @@ if __name__ == '__main__':
             0
         ]
     ]
-    get_captureable_stones(grid, 3)
-    pprint.pprint(grid)
+    # a = get_captureable_stones(grid, 3)
+    # pprint(a)
+    a = looser(grid, 2)
+    pprint(a)
+    pprint(grid)
     # pprint.pprint(init_board(8))

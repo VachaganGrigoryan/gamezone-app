@@ -61,6 +61,7 @@ def update_board(
     moves_result = True
     # message for developer
     message = 'everything is ok'
+
     for i in range(len(grid_changes)-1):
         from_point = grid_changes[i]
         to_point = grid_changes[i+1]
@@ -76,6 +77,8 @@ def update_board(
     if grid_changes[-1] in eat_list[0] and taken_points:
         res = grid_changes[-1]
         moves_result = False
+
+    winner = None
 
     if (not moves_result or
             (moves_result in get_captureable_stones(board.grid, player_queue.stone_type) and taken_points)):
@@ -98,11 +101,30 @@ def update_board(
         )
         board.queue = board.get_next_queue(current=board.queue)
         board.updated_at = now
+
+        winner = None
+        #determine winner
+        if not looser(board.grid, player_queue.stone_type):
+            winner = board.get_next_queue(current=board.queue)
         board.save()
+
     return {
         "queue": str(board.queue),
         "grid": board.grid,
         "updated_at": str(board.updated_at),
         "res": res,
         "message": message,
+        "winner": winner,
+    }
+
+
+@sync_to_async
+def get_board(guid):
+    board = models.Board.objects.get(guid=guid)
+        # guid = types.CheckersBoardType.guid
+
+    return {
+    "queue": str(board.queue),
+    "grid": board.grid,
+    "updated_at": str(board.updated_at),
     }

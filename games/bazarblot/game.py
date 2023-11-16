@@ -149,10 +149,14 @@ if __name__ == '__main__':
         Card(
             rank=Rank.nine,
             suit=Suit.Hearts
+        ),
+        Card(
+            rank=Rank.ten,
+            suit=Suit.Hearts
         )
     ])
     is_valid = g.validate_combinations(Combination(
-        type=CType.Terz,
+        type=CType.Fifty,
         value=[
             Card(
                 rank=Rank.seven,
@@ -165,16 +169,20 @@ if __name__ == '__main__':
             Card(
                 rank=Rank.nine,
                 suit=Suit.Hearts
+            ),
+            Card(
+                rank=Rank.ten,
+                suit=Suit.Hearts
             )
         ]
     ))
 
     print(is_valid)
 
-    d = g.build_deck()
-
-    players_cards = {}
-    for i in range(4):
-        players_cards[i] = d[i * 8:(i + 1) * 8]
-
-    print(json.dumps(players_cards, default=lambda o: o.to_json(), indent=4))
+    # d = g.build_deck()
+    #
+    # players_cards = {}
+    # for i in range(4):
+    #     players_cards[i] = d[i * 8:(i + 1) * 8]
+    #
+    # print(json.dumps(players_cards, default=lambda o: o.to_json(), indent=4))

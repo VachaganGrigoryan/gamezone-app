@@ -16,3 +16,10 @@ class CombinationType(models.TextChoices):
     Fifty = 'Fifty'
     Hundred = 'Hundred'
     FourCards = 'FourCards'
+
+
+class CardSuit(models.TextChoices):
+    Clubs = ('♧', '♣'), 'C'
+    Diamonds = ('♢', '♦'), 'D'
+    Hearts = ('♡', '♥'), 'H'
+    Spades = ('♤', '♠'), 'S'

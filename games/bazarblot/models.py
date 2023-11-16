@@ -6,7 +6,7 @@ from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth import get_user_model
 
-from games.bazarblot.choices import GamePoint, CombinationType
+from games.bazarblot.choices import GamePoint, CombinationType, CardSuit
 from games.bazarblot.fields import CardField
 
 
@@ -82,17 +82,18 @@ class Table(models.Model):
 
 class Round(models.Model):
     table = models.ForeignKey(Table, related_name='rounds', on_delete=models.CASCADE)
-    dealer = models.ForeignKey(
-        get_user_model(),
-        on_delete=models.CASCADE,
-        related_name='round_dealer',
-        help_text='Player who is the dealer for the round'
-    )
 
     is_active = models.BooleanField(
         default=True,
         verbose_name=_('Is active'),
         help_text=_('The status of the board.'),
+    )
+
+    trump_suit = models.CharField(
+        max_length=10,
+        choices=CardSuit.choices,
+        null=True,
+        blank=True,
     )
 
     order = models.IntegerField()
@@ -110,6 +111,30 @@ class Round(models.Model):
 
         verbose_name = _('Round')
         verbose_name_plural = _('Rounds')
+        ordering = ['-pk']
+
+
+class RoundPlayersCards(models.Model):
+    round = models.OneToOneField(Round, related_name='players_cards', on_delete=models.CASCADE)
+    player = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
+
+    cards = ArrayField(
+        CardField(),
+        size=8,
+    )
+
+    class Meta:
+        db_table = 'bazarblot_rounds_players_cards'
+
+        constraints = [
+            models.UniqueConstraint(
+                fields=['round', 'player'],
+                name='unique_one_round_players'
+            )
+        ]
+
+        verbose_name = _('Players Cards')
+        verbose_name_plural = _('Players Cards')
         ordering = ['-pk']
 
 
@@ -171,7 +196,7 @@ class Combination(models.Model):
     )
     value = ArrayField(
         CardField(),
-        max_length=5,
+        size=5,
     )
 
     is_passed = models.BooleanField(default=True)

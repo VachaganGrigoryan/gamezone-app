@@ -4,6 +4,10 @@ import strawberry
 
 from account.types import UserType
 from games.checkers import models
+from games.types import GameType
+from jwtberry.permission import IsAuthenticated
+from games.checkers.game import get_board
+from core.json import JSON
 
 
 @strawberry.django.type(models.Board)
@@ -40,3 +44,19 @@ class CheckersHistoriesType:
     def get_queryset(cls, queryset, info):
         return queryset.filter(is_active=True)
 
+#refactored queries by Samvel
+class CheckersQuery:
+
+    checkers: List[CheckersBoardType] = strawberry.django.field()
+
+    def games(self, info) -> List[GameType]:
+        return GameType.all(info)
+
+    @strawberry.field(permission_classes=[IsAuthenticated])
+    def me(self, info) -> UserType:
+        return info.context.user
+    
+    # get board state
+    @strawberry.field
+    def resolve_board_state(self, info, guid: str) -> JSON:
+        return get_board(guid)

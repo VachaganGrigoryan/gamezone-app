@@ -12,7 +12,7 @@ from games.checkers.types import CheckersBoardType
 from games.millionaire.mutations import MillionaireMutation
 from games.millionaire.types import MillionaireQuery
 from games.types import GameType
-from games.checkers.mutations import create_board, update_board_in_game
+from games.checkers.mutations import CheckersMutation
 from core.json import JSON
 from games.checkers.game import get_board
 
@@ -48,12 +48,14 @@ class Mutation:
     # refresh: JwtAuthResponse = refresh_token
     logout = auth.logout()
     register: UserType = auth.register(UserInput)
-    create_board: JSON = create_board
-    update_board_in_game: JSON = update_board_in_game
 
     @strawberry.django.field()
     def millionaire(self) -> MillionaireMutation:
         return MillionaireMutation()
+
+    @strawberry.django.field()
+    def checkers(self) -> CheckersMutation:
+        return CheckersMutation()
 
 
 schema = strawberry.Schema(

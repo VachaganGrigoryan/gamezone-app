@@ -1,5 +1,4 @@
 from datetime import datetime
-from functools import reduce
 from typing import List
 
 import strawberry
@@ -10,7 +9,7 @@ from . import models
 from .GamePhase import GamePhase
 from .models import Board, BoardPlayers, Histories
 import enum
-from .utils import init_board, get_captureable_stones, move_validation
+from .utils import init_board, get_captureable_stones, move_validation, looser
 from account.models import User
 
 
@@ -19,7 +18,6 @@ class CC(enum.Enum):
     Black = 'Black'
 
 
-@sync_to_async
 def init_game(guid, color=CC.White.value, length=8):
     owner = User.objects.get(guid=guid)
     if not owner:
@@ -46,7 +44,6 @@ def init_game(guid, color=CC.White.value, length=8):
     }
 
 
-@sync_to_async
 def update_board(
         guid: strawberry.ID,
         grid_changes: List[List[int]]
@@ -62,9 +59,9 @@ def update_board(
     # message for developer
     message = 'everything is ok'
 
-    for i in range(len(grid_changes)-1):
+    for i in range(len(grid_changes) - 1):
         from_point = grid_changes[i]
-        to_point = grid_changes[i+1]
+        to_point = grid_changes[i + 1]
         temp = move_validation(from_point, to_point, game_phase)
         moves_result = temp['result']
         res = temp['res']
@@ -79,9 +76,8 @@ def update_board(
         moves_result = False
 
     winner = None
-
-    if (not moves_result or
-            (moves_result in get_captureable_stones(board.grid, player_queue.stone_type) and taken_points)):
+    if not game_phase.result and (not moves_result or
+                                       (moves_result in eat_list[0] and taken_points)):
         message = 'Wrong move'
     else:
         # check damka
@@ -103,7 +99,7 @@ def update_board(
         board.updated_at = now
 
         winner = None
-        #determine winner
+        # determine winner
         if not looser(board.grid, player_queue.stone_type):
             winner = board.get_next_queue(current=board.queue)
         board.save()
@@ -121,10 +117,10 @@ def update_board(
 @sync_to_async
 def get_board(guid):
     board = models.Board.objects.get(guid=guid)
-        # guid = types.CheckersBoardType.guid
+    # guid = types.CheckersBoardType.guid
 
     return {
-    "queue": str(board.queue),
-    "grid": board.grid,
-    "updated_at": str(board.updated_at),
+        "queue": str(board.queue),
+        "grid": board.grid,
+        "updated_at": str(board.updated_at),
     }

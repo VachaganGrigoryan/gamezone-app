@@ -4,7 +4,7 @@ services:
   db:
     image: postgres
     volumes:
-      - ./data/db:/var/lib/postgresql/data
+      - checkers-data:/var/lib/postgresql/data/ #using a volume
     environment:
       - POSTGRES_NAME=postgres
       - POSTGRES_USER=postgres
@@ -49,3 +49,6 @@ services:
       - AWS_STORAGE_BUCKET_NAME=allof-dev
     depends_on:
       - db
+
+volumes:
+  checkers-data:

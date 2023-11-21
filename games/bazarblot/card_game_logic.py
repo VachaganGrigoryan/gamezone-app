@@ -1,7 +1,7 @@
-from bazarblot.models import Rating,Game,Player
+from bazarblot.models import Rating,Player
 import logging
 from django.utils import timezone
-def is_valid_rate_action(player,card_type,new_rate,current_rate):
+def is_valid_rate_action(new_rate,current_rate):
     if current_rate >= new_rate:
         return False
     if current_rate=="contra" and new_rate not in ("recontra","pass"):
@@ -44,6 +44,5 @@ def extract_card_info(card_str):
 
     return card_type,card_name
 cards = ['♠7', '♥7', '♦7', '♣7', '♤7', '♡7', '♢7', '♧7', '♠8', '♥8', '♦8', '♣8', '♤8', '♡8', '♢8', '♧8', '♠9', '♥9', '♦9', '♣9', '♤9', '♡9', '♢9', '♧9', '♠10', '♥10', '♦10', '♣10', '♤10', '♡10', '♢10', '♧10', '♠J', '♥J', '♦J', '♣J', '♤J', '♡J', '♢J', '♧J', '♠Q', '♥Q', '♦Q', '♣Q', '♤Q', '♡Q', '♢Q', '♧Q', '♠K', '♥K', '♦K', '♣K', '♤K', '♡K', '♢K', '♧K', '♠A', '♥A', '♦A', '♣A', '♤A', '♡A', '♢A', '♧A']
-for card_str in cards:
-    card_type,card_name=extract_card_info(card_str)
+
 

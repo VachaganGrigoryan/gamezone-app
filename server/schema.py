@@ -12,8 +12,11 @@ from games.checkers.types import CheckersBoardType
 from games.types import GameType
 
 
+import games.bazarblot.types
+
+
 @strawberry.type
-class Query:
+class Query(games.bazarblot.types.BazarBlotQuery):
     users: List[UserType] = strawberry.django.field()
     user: UserType = strawberry.django.field()
 

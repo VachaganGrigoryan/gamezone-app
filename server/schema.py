@@ -9,6 +9,8 @@ from jwtberry.types import JwtAuthResponse
 
 from account.types import UserType, UserInput
 from games.checkers.types import CheckersBoardType
+from games.millionaire.mutations import MillionaireMutation
+from games.millionaire.types import MillionaireQuery
 from games.types import GameType
 from games.checkers.mutations import create_board, update_board_in_game
 from core.json import JSON
@@ -23,11 +25,9 @@ class Query(games.bazarblot.types.BazarBlotQuery):
     users: List[UserType] = strawberry.django.field()
     user: UserType = strawberry.django.field()
 
-    # games: List[GameType
-    # @strawberry.django.mutation(model=models.Board, handle_django_errors=True)
-    # def create_board(owner: str, color: str, length: int) -> models.Board:
-    #     board = init_game(owner, color, length)
-    #     return board] = login_required(strawberry_django.field())
+    @strawberry.django.field()
+    def millionaire(self) -> MillionaireQuery:
+        return MillionaireQuery()
 
     checkers: List[CheckersBoardType] = strawberry.django.field()
 
@@ -53,6 +53,10 @@ class Mutation:
     register: UserType = auth.register(UserInput)
     create_board: JSON = create_board
     update_board_in_game: JSON = update_board_in_game
+
+    @strawberry.django.field()
+    def millionaire(self) -> MillionaireMutation:
+        return MillionaireMutation()
 
 
 schema = strawberry.Schema(

@@ -65,7 +65,6 @@ class Table(models.Model):
 
     class Meta:
         db_table = 'bazarblot_tables'
-
         verbose_name = _('Table')
         verbose_name_plural = _('Tables')
         ordering = ['-pk']
@@ -256,3 +255,10 @@ class HandScore(models.Model):
     player = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
 
     value = models.IntegerField()
+
+
+class Rating(models.Model):
+    player=models.ForeignKey(Player,on_delete=models.CASCADE)
+    card_type=models.CharField(max_length=10,choices=Card.SUIT_CHOICES)
+    rate=models.CharField(max_length=2,choices=Card.VALUE_CHOICES)
+    

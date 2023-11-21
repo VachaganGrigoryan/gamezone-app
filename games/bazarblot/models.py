@@ -11,8 +11,7 @@ from games.bazarblot.fields import CardField
 
 
 class Team(models.Model):
-    player1 = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
-    player2 = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
+    players = models.ManyToManyField(get_user_model(), max_length=2)
     score = models.IntegerField(default=0)
 
     class Meta:
@@ -187,7 +186,7 @@ class ReContra(models.Model):
 
 
 class Combination(models.Model):
-    round = models.ForeignKey(Round, related_name='bazars', on_delete=models.CASCADE)
+    round = models.ForeignKey(Round, related_name='combinations', on_delete=models.CASCADE)
     player = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
 
     type = models.CharField(

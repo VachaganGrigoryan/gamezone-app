@@ -44,7 +44,8 @@ class CheckersHistoriesType:
     def get_queryset(cls, queryset, info):
         return queryset.filter(is_active=True)
 
-#refactored queries by Samvel
+
+@strawberry.type
 class CheckersQuery:
 
     checkers: List[CheckersBoardType] = strawberry.django.field()

@@ -1,9 +1,11 @@
+import uuid
+
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 
 class Game(models.Model):
-    guid = models.UUIDField(auto_created=True, unique=True, db_index=True)
+    guid = models.UUIDField(auto_created=True, default=uuid.uuid4, unique=True, db_index=True)
     title = models.CharField(max_length=255)
     description = models.TextField()
     image = models.ImageField(upload_to='games', blank=True, null=True)

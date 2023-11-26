@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 
 from pathlib import Path
-from typing import Any, List, Dict
+from typing import Any, List, Dict, Tuple
 from pydantic import Field
 from pydantic_settings import BaseSettings
 
@@ -50,6 +50,7 @@ class DjangoSettings(BaseSettings):
         'django.contrib.staticfiles',
 
         # Third party
+        "corsheaders",
         "django_filters",
         "strawberry.django",
 
@@ -66,6 +67,7 @@ class DjangoSettings(BaseSettings):
     AUTH_USER_MODEL: str = 'account.User'
 
     MIDDLEWARE: List[str] = [
+        "corsheaders.middleware.CorsMiddleware",
         'django.middleware.security.SecurityMiddleware',
         'django.contrib.sessions.middleware.SessionMiddleware',
         'django.middleware.common.CommonMiddleware',
@@ -130,11 +132,19 @@ class DjangoSettings(BaseSettings):
 
     USE_TZ: bool = True
 
+    APPEND_SLASH: bool = False
 
     # Static files (CSS, JavaScript, Images)
     # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
-    STATIC_URL: str = 'static/'
+    STATIC_URL: str = '/static/'
+    STATIC_ROOT: Path = BASE_DIR / 'staticfiles'
+    MEDIA_URL: str = '/media/'
+    MEDIA_ROOT: Path = BASE_DIR / 'media'
+
+    STATICFILES_DIRS: Tuple[Path] = (
+        BASE_DIR / 'static',
+    )
 
     # Default primary key field type
     # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
@@ -145,6 +155,25 @@ class DjangoSettings(BaseSettings):
     AUTHENTICATION_BACKENDS: List[str] = [
         "jwtberry.backends.JwtAuthBackend",
         "django.contrib.auth.backends.ModelBackend",
+    ]
+
+    CORS_ALLOWED_ORIGINS: List[str] = Field(["http://localhost:3000"], env='CORS_ALLOWED_ORIGINS')
+    # config('CORS_ALLOWED_ORIGINS', cast=lambda v: [s.strip() for s in v.split(',')], default='')
+    CSRF_TRUSTED_ORIGINS: List[str] = Field(["http://localhost:3000"], env='CSRF_TRUSTED_ORIGINS')
+    # config('CSRF_TRUSTED_ORIGINS', cast=lambda v: [s.strip() for s in v.split(',')], default='')
+    CORS_ALLOWED_ORIGIN_REGEXES: List[str] = [
+        r"^https://\w+\.gamezone\.am$",
+        r"^http://localhost:3000$",
+        r"^http://0.0.0.0:3000$",
+    ]
+
+    CORS_ALLOW_METHODS: List[str] = [
+        'DELETE',
+        'GET',
+        'OPTIONS',
+        'PATCH',
+        'POST',
+        'PUT',
     ]
 
     class Config:

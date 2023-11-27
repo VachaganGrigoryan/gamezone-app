@@ -2,8 +2,11 @@ import binascii
 import os
 import random
 import string
+from typing import Union, Optional
 
+from django.db.models import ImageField, FileField
 from django.utils.text import slugify
+from strawberry.types import Info
 
 
 def generate_code():
@@ -24,3 +27,7 @@ def unique_slug_generator(instance, attr='title', new_slug=None):
         return unique_slug_generator(instance, new_slug=new_slug)
 
     return slug
+
+
+def url_resolver(info: Info, field: Union[ImageField, FileField]) -> Optional[str]:
+    return info.context.request.build_absolute_uri(field.url) if field else None

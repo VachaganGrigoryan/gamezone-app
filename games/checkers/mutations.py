@@ -2,19 +2,47 @@ from typing import List
 
 import strawberry
 from asgiref.sync import sync_to_async
+from django.db import transaction
 from jwtberry.permission import IsAuthenticated
+from strawberry.types import Info
 
-from .game import init_game, update_board
 from core.json import JSON
+
+from games.checkers import models as m
+from games.checkers.choices import BoardLength
+from games.checkers.game import update_board, CC
+from games.checkers.types import CheckersBoardType
+from games.checkers.utils import init_board
 
 
 @strawberry.type
 class CheckersMutation:
 
-    @strawberry.mutation(permission_classes=[IsAuthenticated])
-    @sync_to_async
-    def create_board(self, owner: str, color: str, length: int) -> JSON:
-        return init_game(owner, color, length)
+    @strawberry.django.mutation(
+        permission_classes=[IsAuthenticated]
+    )
+    @transaction.atomic
+    def start(
+        self,
+        info: Info,
+        color: strawberry.enum(CC) = CC.White,
+        length: strawberry.enum(BoardLength) = BoardLength.EIGHT
+    ) -> CheckersBoardType:
+        user = info.context.user
+        grid = init_board(length)
+
+        board = m.Board.objects.create(
+            owner=user,
+            queue=user if color == CC.White else None,
+            grid=grid,
+        )
+        m.BoardPlayers.objects.create(
+            board=board,
+            player=user,
+            stone_type=2 if color == CC.White else 3
+        )
+
+        return board
 
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     @sync_to_async

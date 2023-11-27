@@ -1,3 +1,12 @@
 from django.contrib import admin
+from games.bazarblot import models
 
-# Register your models here.
+
+@admin.register(models.Table)
+class TableAdmin(admin.ModelAdmin):
+    ...
+
+
+@admin.register(models.Team)
+class TeamAdmin(admin.ModelAdmin):
+    ...

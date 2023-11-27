@@ -36,7 +36,7 @@ class Table(models.Model):
         Team,
         related_name='tables_teams'
     )
-    winner = models.ForeignKey(Team, on_delete=models.CASCADE)
+    winner = models.ForeignKey(Team, null=True, blank=True, on_delete=models.CASCADE)
 
     players_order = models.JSONField(blank=True, null=True)
 
@@ -255,10 +255,3 @@ class HandScore(models.Model):
     player = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
 
     value = models.IntegerField()
-
-
-class Rating(models.Model):
-    player=models.ForeignKey(Player,on_delete=models.CASCADE)
-    card_type=models.CharField(max_length=10,choices=Card.SUIT_CHOICES)
-    rate=models.CharField(max_length=2,choices=Card.VALUE_CHOICES)
-    

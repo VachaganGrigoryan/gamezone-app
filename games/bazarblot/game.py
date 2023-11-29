@@ -12,6 +12,7 @@ class Suit(Enum):
     Diamonds = ('♢', '♦'), 'Diamonds'
     Hearts = ('♡', '♥'), 'Hearts'
     Spades = ('♤', '♠'), 'Spades'
+    Ace = ('A', 'A'), 'Ace'
 
 
 class Rank(Enum):
@@ -133,6 +134,31 @@ class Game:
             return True
 
         raise ValueError('Incorrect')
+
+
+class BazarValidation:
+    def __init__(self, bazars, player):
+        self.bazars = bazars
+        self.player = player
+
+    def get_max_bazar(self):
+        return max(7, 7, *[int(b.value) for b in self.bazars])
+
+    def get_last_bazar(self):
+        return self.bazars[-1] if self.bazars else None
+
+    def has_contra(self):
+        return hasattr(self.get_last_bazar(), "contra") if self.bazars else None
+
+    def validate(self, card, value):
+        if value == "PASS":
+            return True
+        if not self.has_contra() and int(value) > int(self.get_max_bazar()):
+            if len(self.bazars) > 3 and self.bazars[-4].value == "PASS":
+                if self.bazars[-2].card.suit != card.suit or self.bazars[-2].value == "PASS":
+                    return False
+            return True
+        return False
 
 
 if __name__ == '__main__':

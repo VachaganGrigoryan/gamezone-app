@@ -10,7 +10,7 @@ from strawberry.types import Info
 from account.models import User
 from games.bazarblot import models as m
 from games.bazarblot.choices import GamePoint
-from games.bazarblot.game import Game, BazarValidation
+from games.bazarblot.game import Game, BazarValidation, Suit
 from games.bazarblot.inputs import CardInput
 from games.bazarblot.types import Table, Bazar, Contra, ReContra
 
@@ -103,13 +103,25 @@ class BazarblotMutation:
         player = info.context.user
         table = m.Table.objects.get(guid=table_guid)
         game_round = m.Round.objects.get(pk=round_pk)
-        bazars = game_round.bazars.all()
+        bazars = list(game_round.bazars.all())
         length = len(bazars)
-
+        if game_round.trump_suit:
+            raise ValueError("Round is playing")
         if length % 4 != table.players_order.index(str(player.guid)):
             raise ValueError("Invalid queue")
-        if not BazarValidation(list(bazars), player).validate(card, value):
+
+        validation_result = BazarValidation(bazars, player).validate(card, value)
+        if not validation_result:
             raise ValueError("Invalid bazar")
+        elif validation_result == '4 pass':
+            game_round.trump_suit = length >= 4 and bazars[3].value or "No suit"
+            game_round.save()
+
+        if value == "PASS":
+            value = "0"
+        elif "K" in value:
+            value = f'-{value[:-1]}'
+
         bazar = m.Bazar.objects.create(
             round=game_round,
             player=player,
@@ -151,7 +163,6 @@ class BazarblotMutation:
         player = info.context.user
         bazars = game_round.bazars.all()
         last_bazar = list(bazars)[-1]
-
         if not hasattr(last_bazar, "contra"):
             raise ValueError("No contra")
 

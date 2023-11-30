@@ -150,19 +150,38 @@ class BazarValidation:
     def has_contra(self):
         return hasattr(self.get_last_bazar(), "contra") if self.bazars else None
 
+    def pass_check(self):
+        return len(self.bazars) >= 3 and all(bazar.value == '0' for bazar in self.bazars[:3])
+
+    def kaput_check(self):
+        _min = min(0, 0, *[int(b.value) for b in self.bazars])
+        return -int(_min) if _min < 0 else 0
+
     def validate(self, card, value):
+        if self.pass_check() and value == "PASS":
+            return '4 pass'
         if value == "PASS":
             return True
+
+        kaput_value = self.kaput_check()
+        if 'K' in value:
+            if int(value[:-1]) > kaput_value:
+                return True
+            else:
+                return False
+        else:
+            if kaput_value:
+                return False
+
         if not self.has_contra() and int(value) > int(self.get_max_bazar()):
-            if len(self.bazars) > 3 and self.bazars[-4].value == "PASS":
-                if self.bazars[-2].card.suit != card.suit or self.bazars[-2].value == "PASS":
+            if len(self.bazars) > 3 and self.bazars[3].value == "0":
+                if self.bazars[1].card.suit != card.suit or self.bazars[1].value == "0":
                     return False
             return True
         return False
 
 
 if __name__ == '__main__':
-
     g = Game(player_cards=[
         Card(
             rank=Rank.seven,

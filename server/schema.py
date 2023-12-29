@@ -1,13 +1,8 @@
-from typing import List
-
 import strawberry
 from strawberry.django import auth
 
-from jwtberry.mutations import auth_token
-from jwtberry.types import JwtAuthResponse
-
 from account.mutations import AccountMutation
-from account.types import UserType, UserInput, AccountQuery
+from account.types import AccountQuery
 from games.bazarblot.mutations import BazarblotMutation
 from games.bazarblot.types import BazarblotQuery
 from games.millionaire.mutations import MillionaireMutation

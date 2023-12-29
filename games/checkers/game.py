@@ -1,16 +1,14 @@
 from datetime import datetime
-from typing import List
+from typing import List, Tuple
 
 import strawberry
-from asgiref.sync import sync_to_async
 
 from core.json import JSON
 from . import models
 from .GamePhase import GamePhase
-from .models import Board, BoardPlayers, Histories
+from .models import BoardPlayers, Histories
 import enum
-from .utils import init_board, get_captureable_stones, move_validation, looser
-from account.models import User
+from .utils import get_captureable_stones, move_validation, looser
 
 
 class CC(enum.Enum):
@@ -18,30 +16,53 @@ class CC(enum.Enum):
     Black = 'Black'
 
 
-def init_game(guid, color=CC.White.value, length=8):
-    owner = User.objects.get(guid=guid)
-    if not owner:
-        return 'no user'
-    grid = init_board(length)
-    if not grid:
-        return {
-            'error': "The Board should be have 8 or 10 length!"
-        }
-    board = Board.objects.create(
-        owner=owner,
-        queue=owner if color == CC.White.value else None,
-        grid=grid,
-    )
-    BoardPlayers.objects.create(
-        board=board,
-        player=owner,
-        stone_type=2 if color == CC.White.value else 3
-    )
+class Game:
 
-    return {
-        "guid": str(board.guid),
-        "board": board.grid
-    }
+    def __init__(self, grid: List[List[int]], player_stone: int):
+        self.grid = grid
+        self.player_stone = player_stone
+
+    def validate_move(self, moves: List[List[int]]) -> Tuple[bool, List]:
+        errors = []
+        if len(moves) == 2:
+            if self.have_eats_move():
+                errors.append({
+                    'type': 'incorrect-have-eats',
+                    'message': 'You need to eat stone.'
+                })
+            elif not self.can_move(moves):
+                errors.append({
+                    'type': 'incorrect-move',
+                    'message': 'You cant do move.'
+                })
+        elif len(moves) > 2:
+            if not self.can_eat(moves):
+                errors.append({
+                    'type': 'incorrect-eat-or-move',
+                    'message': 'You can not eat stone.'
+                })
+        else:
+            errors.append({
+                'type': 'incorrect-move',
+                'message': 'Moves is incorrect.'
+            })
+
+        return len(errors) == 0, errors
+
+    def have_eats_move(self) -> bool:
+        ...
+
+    def can_eat(self, moves) -> bool:
+        ...
+
+    def can_move(self, moves) -> bool:
+        ...
+
+    def move_to(self, moves):
+        ...
+
+    def is_ended(self) -> bool:
+        ...
 
 
 def update_board(
@@ -77,7 +98,7 @@ def update_board(
 
     winner = None
     if not game_phase.result and (not moves_result or
-                                       (moves_result in eat_list[0] and taken_points)):
+                                  (moves_result in eat_list[0] and taken_points)):
         message = 'Wrong move'
     else:
         # check damka
@@ -111,16 +132,4 @@ def update_board(
         "res": res,
         "message": message,
         "winner": winner,
-    }
-
-
-@sync_to_async
-def get_board(guid):
-    board = models.Board.objects.get(guid=guid)
-    # guid = types.CheckersBoardType.guid
-
-    return {
-        "queue": str(board.queue),
-        "grid": board.grid,
-        "updated_at": str(board.updated_at),
     }

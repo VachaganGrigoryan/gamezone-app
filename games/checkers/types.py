@@ -17,9 +17,9 @@ class BoardPlayers:
 
 
 @strawberry.django.type(m.Board)
-class CheckersBoardType:
+class Board:
     guid: strawberry.ID
-    queue: UserType
+    queue: Optional[UserType]
     winner: Optional[UserType]
     grid: List[List[int]]
     length: int
@@ -47,14 +47,13 @@ class CheckersBoardType:
 
 
 @strawberry.django.type(m.Histories)
-class CheckersHistoriesType:
+class Histories:
     guid: strawberry.ID
-    board: CheckersBoardType
+    board: Board
     player: UserType
 
-    from_point: List[int]
-    to_point: List[int]
-    taken_points: List[List[int]]
+    grid_changes: List[List[int]]
+    taken_points: Optional[List[List[int]]]
 
     played_at: str
 
@@ -69,12 +68,12 @@ class CheckersQuery:
     @strawberry.django.field(
         permission_classes=[IsAuthenticated]
     )
-    async def game(self, info: Info, guid: str) -> CheckersBoardType:
-        return await CheckersBoardType.get_object_by_guid(info, guid)
+    async def game(self, info: Info, guid: str) -> Board:
+        return await Board.get_object_by_guid(info, guid)
 
 
     @strawberry.django.field(
         permission_classes=[IsAuthenticated]
     )
-    def boards(self, info: Info) -> List[CheckersBoardType]:
-        return CheckersBoardType.all(info)
+    def boards(self, info: Info) -> List[Board]:
+        return Board.all(info)

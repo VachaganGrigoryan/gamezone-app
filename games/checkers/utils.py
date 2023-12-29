@@ -3,7 +3,7 @@ from pprint import pprint
 from games.checkers.GamePhase import GamePhase
 
 
-def init_board(length):
+def init_board(length=8):
     if length not in [8, 10]:
         return False
 

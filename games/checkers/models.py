@@ -6,11 +6,31 @@ from django.db import models
 from games.checkers.choices import BoardLength
 from django.utils.translation import gettext_lazy as _
 
+
+def init_board(length=8):
+    if length not in [8, 10]:
+        return False
+
+    l_middle = length // 2
+
+    def get_num(i, j):
+        if (i + j) % 2 == 0:
+            return 0
+        if i < l_middle - 1:
+            return 2
+        if i <= l_middle:
+            return 1
+        return 3
+
+    return [[get_num(i, j) for j in range(length)] for i in range(length)]
+
+
 class MultiplayerGame(models.Model):
     sender_id = models.CharField(max_length=100)
     recipient_id = models.CharField(max_length=100)
     board_id = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
+
 
 class Board(models.Model):
     """
@@ -60,15 +80,11 @@ class Board(models.Model):
 
     grid = ArrayField(
         ArrayField(
-            models.IntegerField(blank=True, null=True),
-            blank=True,
-            null=True
+            models.IntegerField(),
         ),
         verbose_name=_('Grid'),
         help_text=_('The grid of the board.'),
-        default=list,
-        blank=True,
-        null=True
+        default=init_board,
     )
     length = models.IntegerField(
         verbose_name=_('Length'),

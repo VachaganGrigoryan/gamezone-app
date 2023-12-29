@@ -24,7 +24,13 @@ from server.schema import schema
 urlpatterns = [
     path('admin/', admin.site.urls),
 
-    path("graphql", JwtAsyncGraphQLView.as_view(schema=schema)),
+    path(
+        "graphql",
+        JwtAsyncGraphQLView.as_view(
+            schema=schema,
+            graphiql=settings.DEBUG,
+        ),
+    ),
 ]
 
 if settings.DEBUG:

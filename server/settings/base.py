@@ -47,6 +47,7 @@ class DjangoSettings(BaseSettings):
         'django.contrib.contenttypes',
         'django.contrib.sessions',
         'django.contrib.messages',
+        'daphne',
         'django.contrib.staticfiles',
 
         # Third party
@@ -96,6 +97,7 @@ class DjangoSettings(BaseSettings):
     ]
 
     WSGI_APPLICATION: str = 'server.wsgi.application'
+    ASGI_APPLICATION: str = 'server.asgi.application'
 
 
     # Database

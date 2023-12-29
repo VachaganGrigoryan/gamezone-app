@@ -8,6 +8,8 @@ from strawberry.types import Info
 from account.types import UserType
 from core.json import JSON
 from games.bazarblot import models as m
+from games.bazarblot.game import Rank, Suit
+from games.bazarblot.inputs import CardInput
 
 
 @strawberry.django.type(m.Team)
@@ -24,6 +26,7 @@ class Team:
 class Table:
     guid: strawberry.ID
 
+    rounds: "Round"
     teams: List[Team]
 
     max_points: auto
@@ -37,6 +40,44 @@ class Table:
     @classmethod
     def all(cls, info) -> List[m.Table]:
         return m.Table.objects.all()
+
+
+@strawberry.django.type(m.Round)
+class Round:
+    pk: strawberry.ID
+
+    is_active: auto
+    trump_suit: strawberry.enum(Suit)
+    order: auto
+
+
+@strawberry.type
+class Card:
+    rank: strawberry.enum(Rank)
+    suit: strawberry.enum(Suit)
+
+
+@strawberry.django.type(m.Bazar)
+class Bazar:
+    pk: strawberry.ID
+
+    round: Round
+    player: UserType
+
+    card: Card
+    value: auto
+
+
+@strawberry.django.type(m.Contra)
+class Contra:
+    bazar: Bazar
+    player: UserType
+
+
+@strawberry.django.type(m.ReContra)
+class ReContra:
+    contra: Contra
+    player: UserType
 
 
 @strawberry.type

@@ -113,7 +113,7 @@ class Round(models.Model):
 
 
 class RoundPlayersCards(models.Model):
-    round = models.OneToOneField(Round, related_name='players_cards', on_delete=models.CASCADE)
+    round = models.ForeignKey(Round, related_name='players_cards', on_delete=models.CASCADE)
     player = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
 
     cards = ArrayField(

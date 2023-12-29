@@ -39,6 +39,7 @@ class ChatMembers(models.Model):
     )
 
     class Meta:
+        db_table = 'chat_members'
         unique_together = ('chat', 'user')
 
 

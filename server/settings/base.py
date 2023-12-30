@@ -160,12 +160,13 @@ class DjangoSettings(BaseSettings):
         "django.contrib.auth.backends.ModelBackend",
     ]
 
-    CORS_ALLOWED_ORIGINS: List[str] = Field(["http://localhost:3000"], env='CORS_ALLOWED_ORIGINS')
+    CORS_ALLOWED_ORIGINS: List[str] = Field(["https://gamezone-app.onrender.com", "http://localhost:3000"], env='CORS_ALLOWED_ORIGINS')
     # config('CORS_ALLOWED_ORIGINS', cast=lambda v: [s.strip() for s in v.split(',')], default='')
-    CSRF_TRUSTED_ORIGINS: List[str] = Field(["http://localhost:3000"], env='CSRF_TRUSTED_ORIGINS')
+    CSRF_TRUSTED_ORIGINS: List[str] = Field(["https://gamezone-app.onrender.com", "http://localhost:3000"], env='CSRF_TRUSTED_ORIGINS')
     # config('CSRF_TRUSTED_ORIGINS', cast=lambda v: [s.strip() for s in v.split(',')], default='')
     CORS_ALLOWED_ORIGIN_REGEXES: List[str] = [
         r"^https://\w+\.gamezone\.am$",
+        r"^https://\w+\.onrender\.com$",
         r"^http://localhost:3000$",
         r"^http://0.0.0.0:3000$",
     ]

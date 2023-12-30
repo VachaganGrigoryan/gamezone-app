@@ -93,6 +93,6 @@ RUN #python manage.py collectstatic --noinput --clear
 #   Wagtail instance can be started with a simple "docker run" command.
 CMD set -xe; python manage.py migrate --noinput
 #CMD gunicorn config.wsgi:application
-#CMD daphne -b $HOST_URL -p $PORT config.asgi:application
-CMD ["gunicorn", "--bind", ":8000", "--workers", "4", "--worker-class", "server.asgi.gunicorn_worker.UvicornWorker", "server.asgi:application"]
+CMD daphne -b $HOST_URL -p $HOST_PORT server.asgi:application
+#CMD ["gunicorn", "--bind", ":8000", "--workers", "4", "--worker-class", "server.asgi.gunicorn_worker.UvicornWorker", "server.asgi:application"]
 # gunicorn --bind 0.0.0.0:8000 jwt_berry.asgi -w 4 -k uvicorn.workers.UvicornWorker
